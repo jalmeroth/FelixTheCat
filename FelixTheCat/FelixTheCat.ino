@@ -2,6 +2,14 @@
 #include <FastLED.h>
 #include <Servo.h>
 
+#define FW_NAME "felixthecat"
+#define FW_VERSION "1.0.1"
+
+/* Magic sequence for Autodetectable Binary Upload */
+const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
+const char *__FLAGGED_FW_VERSION = "\x6a\x3f\x3e\x0e\xe1" FW_VERSION "\xb0\x30\x48\xd4\x1a";
+/* End of magic sequence for Autodetectable Binary Upload */
+
 #define NUM_LEDS 2
 #define PIN_LEDS 14
 #define PIN_SERVO 4
@@ -18,6 +26,25 @@ const int midPosition = 100;
 const float pi = 3.14;
 const float w = 2*pi/800;
 String eyecolor = "red";
+
+const int NUMBER_OF_COLORS = 6;
+const int SIZE_OF_COLORS = 7;
+
+char colors[NUMBER_OF_COLORS][SIZE_OF_COLORS] = {
+ { "red" },
+ { "green" },
+ { "blue" },
+ { "yellow" },
+ { "cyan" },
+ { "pink" },
+};
+
+bool isValidColor(String color) {
+  for(int i = 0; i < NUMBER_OF_COLORS; i++) {
+    if(String(colors[i]) == color) return true;
+  }
+  return false;
+}
 
 bool commandHandler(String value) {
   value.toLowerCase();
@@ -43,40 +70,42 @@ bool eyecolorHandler(String value) {
 
 void wink() {
   Serial.println("o/");
-  changeColor(eyecolor);      // turn eyes on with defined color
-  myservo.attach(PIN_SERVO);  // attaches the servo on pin 9 to the servo object
+  showEyeColor(eyecolor);             // turn eyes on with defined color
+  myservo.attach(PIN_SERVO);          // attaches the servo on pin 9 to the servo object
   for( float t = 0.0; t < 2000; t += 15 ) {
      float pos = midPosition + 70.0*sin( w * t ) * pow(2.714, -(w/15.0) * t);
      myservo.write((int) pos);
      delay(15);
   }
   myservo.detach();
-  changeColor("");            // turn eyes off
+  showEyeColor("");                   // turn eyes off
+}
+
+void showEyeColor(String color) {
+  if(color == "red") {
+    FastLED.showColor(CRGB::Red); 
+  } else if (color == "green") {
+    FastLED.showColor(CRGB::Green);
+  } else if (color == "blue") {
+    FastLED.showColor(CRGB::Blue);
+  } else if (color == "yellow") {
+    FastLED.showColor(CRGB::Yellow);
+  } else if (color == "cyan") {
+    FastLED.showColor(CRGB::Cyan);
+  } else if (color == "pink") {
+    FastLED.showColor(CRGB::Pink);
+  } else {
+    FastLED.showColor(CRGB::Black);   // turn eyes off
+  }
 }
 
 void changeColor(String color) {
-  Serial.print("Color: "); Serial.println(color);
-  if(color == "red") {
+  if(isValidColor(color)) {
+    Serial.print("Color: "); Serial.println(color);
+    Homie.setNodeProperty(eyecolorNode, "eyecolor", color); 
     eyecolor = color;
-    FastLED.showColor(CRGB::Red); 
-  } else if (color == "green") {
-    eyecolor = color;
-    FastLED.showColor(CRGB::Green);
-  } else if (color == "blue") {
-    eyecolor = color;
-    FastLED.showColor(CRGB::Blue);
-  } else if (color == "yellow") {
-    eyecolor = color;
-    FastLED.showColor(CRGB::Yellow);
-  } else if (color == "cyan") {
-    eyecolor = color;
-    FastLED.showColor(CRGB::Cyan);
-  } else if (color == "pink") {
-    eyecolor = color;
-    FastLED.showColor(CRGB::Pink);
-  } else {    // turn off
+  } else {
     Serial.println("Ignoring invalid color.");
-    FastLED.showColor(CRGB::Black);
   }
 }
 
@@ -88,9 +117,10 @@ void serialComm() {
     inputString.toLowerCase();
     if(inputString == "wink") {
       wink();
+    } else if(isValidColor(inputString)) {
+      changeColor(inputString);
     } else {
-      // insert input validation here
-      eyecolor = inputString;
+      Serial.print("Ignoring: "); Serial.println(inputString);
     }
   }
 }
@@ -103,7 +133,7 @@ void setup() {
   FastLED.addLeds<WS2811, PIN_LEDS, RGB>(leds, NUM_LEDS);
   wink();
   Homie.enableBuiltInLedIndicator(false);
-  Homie.setFirmware("felixthecat", "1.0.0");
+  Homie.setFirmware(FW_NAME, FW_VERSION);
   commandNode.subscribe("wink", commandHandler);
   eyecolorNode.subscribe("eyecolor", eyecolorHandler);
   Homie.registerNode(commandNode);
