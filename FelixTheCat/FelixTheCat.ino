@@ -3,7 +3,7 @@
 #include <Servo.h>
 
 #define FW_NAME "felixthecat"
-#define FW_VERSION "1.0.1"
+#define FW_VERSION "1.0.2"
 
 /* Magic sequence for Autodetectable Binary Upload */
 const char *__FLAGGED_FW_NAME = "\xbf\x84\xe4\x13\x54" FW_NAME "\x93\x44\x6b\xa7\x75";
@@ -70,6 +70,9 @@ bool eyecolorHandler(String value) {
 
 void wink() {
   Serial.println("o/");
+  if(Homie.isReadyToOperate()) {
+      Homie.setNodeProperty(commandNode, "status", "fishing", false);
+  }
   showEyeColor(eyecolor);             // turn eyes on with defined color
   myservo.attach(PIN_SERVO);          // attaches the servo on pin 9 to the servo object
   for( float t = 0.0; t < 2000; t += 15 ) {
@@ -102,7 +105,9 @@ void showEyeColor(String color) {
 void changeColor(String color) {
   if(isValidColor(color)) {
     Serial.print("Color: "); Serial.println(color);
-    Homie.setNodeProperty(eyecolorNode, "eyecolor", color); 
+    if(Homie.isReadyToOperate()) {
+      Homie.setNodeProperty(eyecolorNode, "eyecolor", color); 
+    }
     eyecolor = color;
   } else {
     Serial.println("Ignoring invalid color.");
