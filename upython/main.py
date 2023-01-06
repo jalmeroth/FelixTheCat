@@ -8,7 +8,7 @@ from umqtt_simple import MQTTClient, MQTTException
 from net import do_connect
 from led import set_eye_color
 from config import Config
-from .servo import wave
+from servo import wave
 
 CONFIG = Config()
 COUNTER = 0
