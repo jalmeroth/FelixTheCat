@@ -12,7 +12,6 @@ from servo import wave
 
 EYES = Eyes()
 CONFIG = Config()
-COUNTER = 0
 CAT_NAME = getattr(CONFIG, "CAT_NAME", "FelixTheCat")
 
 MQTT_CLIENT_ID = hexlify(unique_id())
