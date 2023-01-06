@@ -1,33 +1,33 @@
+"""Provide Servo functions."""
 from time import sleep
 from machine import Pin, PWM
+from const import SERVO_PIN
 
 
-def wave():
-    speed = 0.3
+class Servo:
+    """Represent a Servo."""
+
+    back = 40
     front = 115
     middle = 77
-    back = 40
+    pause = 0.2
 
-    full = 4 * speed
-    half = 3 * speed
+    def __init__(self) -> None:
+        self.servo = PWM(Pin(SERVO_PIN), freq=50, duty=self.middle)
 
-    servo = PWM(Pin(4), freq=50, duty=middle)
-    print(servo)
-    sleep(full)
-    # => middle
-    servo.duty(back)
-    sleep(half)
-    # => back
-    servo.duty(front)
-    sleep(full)
-    # => front
-    servo.duty(back)
-    sleep(full)
-    # => back
-    servo.duty(front)
-    sleep(full)
-    # => front
-    servo.duty(middle)
-    sleep(half)
-    servo.deinit()
-    sleep(1)
+    def wave(self):
+        """Wave arm."""
+        sleep(self.pause)  # might move to middle
+        self.servo.duty(self.front)
+        sleep(self.pause)  # move to front
+        self.servo.duty(self.back)
+        sleep(3 * self.pause)  # move to back
+        self.servo.duty(self.front)
+        sleep(3 * self.pause)  # move to front
+        self.servo.duty(self.back)
+        sleep(3 * self.pause)  # move to back
+        self.servo.duty(self.middle)
+        sleep(self.pause)  # move to middle
+
+    def __del__(self):
+        self.servo.deinit()

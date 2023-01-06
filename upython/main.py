@@ -8,7 +8,7 @@ from umqtt_simple import MQTTClient, MQTTException
 from net import do_connect
 from led import Eyes
 from config import Config
-from servo import wave
+from servo import Servo
 
 EYES = Eyes()
 CONFIG = Config()
@@ -55,14 +55,14 @@ def wink():
     print("^-^/")
     MQTT_CLIENT.publish(MQTT_TOPIC_STATUS, "fishing")
     EYES.show()
-    wave()
+    Servo().wave()
     EYES.show("black")
 
 
 def main():
     """Provide main routine."""
-    ssid = getattr(CONFIG, "WIFI_SSID")
-    password = getattr(CONFIG, "WIFI_PASS")
+    ssid = getattr(CONFIG, "WIFI_SSID", "")
+    password = getattr(CONFIG, "WIFI_PASS", "")
     do_connect(ssid, password)
     EYES.show("yellow")
     MQTT_CLIENT.set_callback(message_handler)

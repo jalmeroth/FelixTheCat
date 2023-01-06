@@ -13,3 +13,4 @@ CONFIG_FILE = "config.json"
 LED_COUNT = 2
 LED_ORDER = (0, 1, 2, 3)  # RGB not GRB
 LED_PIN = 14
+SERVO_PIN = 12
