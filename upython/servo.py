@@ -27,7 +27,5 @@ class Servo:
         self.servo.duty(self.back)
         sleep(3 * self.pause)  # move to back
         self.servo.duty(self.middle)
-        sleep(self.pause)  # move to middle
-
-    def __del__(self):
+        sleep(3 * self.pause)  # move to middle
         self.servo.deinit()
