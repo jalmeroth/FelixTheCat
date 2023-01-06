@@ -21,7 +21,8 @@ MQTT_SERVER = getattr(CONFIG, "MQTT_SERVER", "test.mosquitto.org")
 MQTT_CLIENT = MQTTClient(MQTT_CLIENT_ID, MQTT_SERVER, keepalive=MQTT_KEEPALIVE)
 
 MQTT_TOPIC_BASE = f"{CAT_NAME}"
-MQTT_TOPIC_STATUS = f"{MQTT_TOPIC_BASE}/connected"
+MQTT_TOPIC_CONNECTED = f"{MQTT_TOPIC_BASE}/connected"
+MQTT_TOPIC_STATUS = f"{MQTT_TOPIC_BASE}/status"
 MQTT_TOPIC_ALLCATS = "winkekatze/allcats"
 
 tim = Timer(-1)
@@ -38,7 +39,7 @@ def message_handler(topic, msg):
     topic = topic.decode()
     msg = msg.decode()
     print((topic, msg))
-    if topic == MQTT_TOPIC_STATUS:  # we successfully subscribed ourselfs
+    if topic == MQTT_TOPIC_CONNECTED:  # we successfully subscribed ourselfs
         EYES.show("green")
         sleep(1)
         EYES.show("black")
@@ -53,6 +54,7 @@ def message_handler(topic, msg):
 def wink():
     """Wink."""
     print("^-^/")
+    MQTT_CLIENT.publish(MQTT_TOPIC_STATUS, "fishing")
     EYES.show()
     wave()
     EYES.show("black")
@@ -65,9 +67,9 @@ def main():
     do_connect(ssid, password)
     EYES.show("yellow")
     MQTT_CLIENT.set_callback(message_handler)
-    MQTT_CLIENT.set_last_will(MQTT_TOPIC_STATUS, "0", True)
+    MQTT_CLIENT.set_last_will(MQTT_TOPIC_CONNECTED, "0", True)
     MQTT_CLIENT.connect()
-    MQTT_CLIENT.publish(MQTT_TOPIC_STATUS, "1", True)
+    MQTT_CLIENT.publish(MQTT_TOPIC_CONNECTED, "1", True)
     MQTT_CLIENT.subscribe(f"{MQTT_TOPIC_ALLCATS}/#".encode())
     MQTT_CLIENT.subscribe(f"{MQTT_TOPIC_BASE}/#".encode())
 
