@@ -39,9 +39,8 @@ def message_handler(topic, msg):
     msg = msg.decode()
     print((topic, msg))
     if topic == MQTT_TOPIC_CONNECTED:  # we successfully subscribed ourselfs
-        EYES.show("green")
-        sleep(1)
-        EYES.show("black")
+        EYES.set_color("green")
+        wink()
     elif topic == MQTT_TOPIC_ALLCATS or topic.endswith("command"):
         wink()
     elif topic.endswith("eye/set"):
