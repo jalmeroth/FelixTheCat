@@ -13,13 +13,15 @@ from servo import Servo
 EYES = Eyes()
 CONFIG = Config()
 CAT_NAME = getattr(CONFIG, "CAT_NAME", "FelixTheCat")
+MQTT_PREFIX = getattr(CONFIG, "MQTT_PREFIX", "winkekatze")
 
 MQTT_CLIENT_ID = hexlify(unique_id())
 MQTT_KEEPALIVE = getattr(CONFIG, "MQTT_KEEPALIVE", 120)
 MQTT_SERVER = getattr(CONFIG, "MQTT_SERVER", "test.mosquitto.org")
 MQTT_CLIENT = MQTTClient(MQTT_CLIENT_ID, MQTT_SERVER, keepalive=MQTT_KEEPALIVE)
 
-MQTT_TOPIC_BASE = f"{CAT_NAME}"
+MQTT_TOPIC_PREFIX = MQTT_PREFIX
+MQTT_TOPIC_BASE = f"{MQTT_PREFIX}/{CAT_NAME}"
 MQTT_TOPIC_CONNECTED = f"{MQTT_TOPIC_BASE}/connected"
 MQTT_TOPIC_STATUS = f"{MQTT_TOPIC_BASE}/status"
 MQTT_TOPIC_ALLCATS = "winkekatze/allcats"
