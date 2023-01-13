@@ -7,25 +7,23 @@ from const import SERVO_PIN
 class Servo:
     """Represent a Servo."""
 
-    back = 40
-    front = 115
-    middle = 77
+    back = 50
+    front = 100
+    middle = 75
     pause = 0.2
-
-    def __init__(self) -> None:
-        self.servo = PWM(Pin(SERVO_PIN), freq=50, duty=self.middle)
 
     def wave(self):
         """Wave arm."""
+        servo = PWM(Pin(SERVO_PIN), freq=50, duty=self.middle)
         sleep(self.pause)  # might move to middle
-        self.servo.duty(self.front)
+        servo.duty(self.front)
         sleep(self.pause)  # move to front
-        self.servo.duty(self.back)
+        servo.duty(self.back)
         sleep(3 * self.pause)  # move to back
-        self.servo.duty(self.front)
+        servo.duty(self.front)
         sleep(3 * self.pause)  # move to front
-        self.servo.duty(self.back)
+        servo.duty(self.back)
         sleep(3 * self.pause)  # move to back
-        self.servo.duty(self.middle)
+        servo.duty(self.middle)
         sleep(3 * self.pause)  # move to middle
-        self.servo.deinit()
+        servo.deinit()
