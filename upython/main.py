@@ -2,6 +2,7 @@
 from machine import unique_id, Timer, reset
 from time import time
 from ubinascii import hexlify
+import json
 
 from umqtt_simple import MQTTClient, MQTTException
 
@@ -40,6 +41,17 @@ def send_uptime():
     MQTT_CLIENT.publish(MQTT_TOPIC_UPTIME, str(time()))  # roll over after X
 
 
+def update_config(data):
+    """Update config."""
+    config = {}
+    try:
+        config = json.loads(data)
+    except TypeError:
+        pass
+    CONFIG.data.update(config)  # update running config
+    CONFIG.save(CONFIG.data)  # persist running config
+
+
 # Received messages from subscriptions will be delivered to this callback
 def message_handler(topic, msg):
     """MQTT Callback."""
@@ -53,6 +65,8 @@ def message_handler(topic, msg):
         wink()
     elif topic.endswith("eye/set"):
         EYES.set_color(msg)
+    elif topic == f"{MQTT_TOPIC_BASE}/config/set":
+        update_config(msg)
     else:
         print("Meow.")
 
