@@ -67,6 +67,8 @@ def message_handler(topic, msg):
         EYES.set_color(msg)
     elif topic == f"{MQTT_TOPIC_BASE}/config/set":
         update_config(msg)
+    elif topic == f"{MQTT_TOPIC_BASE}/reset/set":
+        reset()
     else:
         print("Meow.")
 
