@@ -1,6 +1,6 @@
 """Provice main routines."""
 from machine import unique_id, Timer, reset
-from time import sleep
+from time import time
 from ubinascii import hexlify
 
 from umqtt_simple import MQTTClient, MQTTException
@@ -24,14 +24,20 @@ MQTT_TOPIC_PREFIX = MQTT_PREFIX
 MQTT_TOPIC_BASE = f"{MQTT_PREFIX}/{CAT_NAME}"
 MQTT_TOPIC_CONNECTED = f"{MQTT_TOPIC_BASE}/connected"
 MQTT_TOPIC_STATUS = f"{MQTT_TOPIC_BASE}/status"
+MQTT_TOPIC_UPTIME = f"{MQTT_TOPIC_BASE}/uptime"
 MQTT_TOPIC_ALLCATS = "winkekatze/allcats"
 
 tim = Timer(-1)
 tim.init(
     period=MQTT_KEEPALIVE * 1000,
     mode=Timer.PERIODIC,
-    callback=lambda t: MQTT_CLIENT.ping(),
+    callback=lambda t: send_uptime(),
 )
+
+
+def send_uptime():
+    """Send uptime value."""
+    MQTT_CLIENT.publish(MQTT_TOPIC_UPTIME, str(time()))  # roll over after X
 
 
 # Received messages from subscriptions will be delivered to this callback
