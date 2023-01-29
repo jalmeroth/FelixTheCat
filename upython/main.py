@@ -30,7 +30,7 @@ MQTT_TOPIC_ALLCATS = "winkekatze/allcats"
 
 tim = Timer(-1)
 tim.init(
-    period=MQTT_KEEPALIVE * 1000,
+    period=MQTT_KEEPALIVE * 500,  # ping twice during KEEPALIVE
     mode=Timer.PERIODIC,
     callback=lambda t: send_uptime(),
 )
