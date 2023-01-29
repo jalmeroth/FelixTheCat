@@ -4,7 +4,8 @@ from time import time
 from ubinascii import hexlify
 import json
 
-from umqtt_simple import MQTTClient, MQTTException
+from umqtt.simple import MQTTException
+from umqtt.robust import MQTTClient
 
 from net import do_connect
 from led import Eyes
@@ -20,6 +21,7 @@ MQTT_CLIENT_ID = hexlify(unique_id())
 MQTT_KEEPALIVE = getattr(CONFIG, "MQTT_KEEPALIVE", 120)
 MQTT_SERVER = getattr(CONFIG, "MQTT_SERVER", "test.mosquitto.org")
 MQTT_CLIENT = MQTTClient(MQTT_CLIENT_ID, MQTT_SERVER, keepalive=MQTT_KEEPALIVE)
+MQTT_CLIENT.DEBUG = True
 
 MQTT_TOPIC_PREFIX = MQTT_PREFIX
 MQTT_TOPIC_BASE = f"{MQTT_PREFIX}/{CAT_NAME}"
