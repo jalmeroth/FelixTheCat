@@ -1,7 +1,6 @@
 """Provide Servo functions."""
 from time import sleep
 from machine import Pin, PWM
-from const import SERVO_PIN
 
 
 class Servo:
@@ -12,9 +11,12 @@ class Servo:
     middle = 75
     pause = 0.2
 
+    def __init__(self, pin) -> None:
+        self.pin = pin
+
     def wave(self):
         """Wave arm."""
-        servo = PWM(Pin(SERVO_PIN), freq=50, duty=self.middle)
+        servo = PWM(Pin(self.pin), freq=50, duty=self.middle)
         sleep(self.pause)  # might move to middle
         servo.duty(self.front)
         sleep(self.pause)  # move to front
@@ -27,3 +29,4 @@ class Servo:
         servo.duty(self.middle)
         sleep(3 * self.pause)  # move to middle
         servo.deinit()
+        Pin(self.pin, mode=Pin.IN)

@@ -10,4 +10,3 @@ COLORS = {
     "yellow": (0xFF, 0xFF, 0x00),
 }
 CONFIG_FILE = "config.json"
-SERVO_PIN = 5

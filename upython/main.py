@@ -12,6 +12,7 @@ from net import NetworkManager
 from servo import Servo
 
 CONFIG = Config()
+SERVO_PIN = getattr(CONFIG, "SERVO_PIN", "5")
 LED_PIN = getattr(CONFIG, "LED_PIN", "4")
 LED_COUNT = getattr(CONFIG, "LED_COUNT", "2")
 LED_ORDER = getattr(CONFIG, "LED_ORDER", None)  # RGB not GRB
@@ -71,7 +72,7 @@ def wink():
     print("^-^/")
     MQTT_CLIENT.publish(MQTT_TOPIC_STATUS, "fishing")
     EYES.show()
-    Servo().wave()
+    Servo(SERVO_PIN).wave()
     EYES.show("black")
 
 
