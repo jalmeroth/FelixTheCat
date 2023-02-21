@@ -1,27 +1,25 @@
 """Provice main routines."""
-from machine import unique_id, Timer, reset
-from time import time
-from ubinascii import hexlify
 import json
+from machine import reset, unique_id
+from ubinascii import hexlify
 
 from umqtt.simple import MQTTException
-from umqtt.robust import MQTTClient
 
-from net import do_connect
-from led import Eyes
 from config import Config
+from led import Eyes
+from mqtt import Wrapper
+from net import NetworkManager
 from servo import Servo
 
 EYES = Eyes()
 CONFIG = Config()
+MQTT_CLIENT = Wrapper()
 CAT_NAME = getattr(CONFIG, "CAT_NAME", "FelixTheCat")
 MQTT_PREFIX = getattr(CONFIG, "MQTT_PREFIX", "winkekatze")
 
 MQTT_CLIENT_ID = hexlify(unique_id())
 MQTT_KEEPALIVE = getattr(CONFIG, "MQTT_KEEPALIVE", 120)
 MQTT_SERVER = getattr(CONFIG, "MQTT_SERVER", "test.mosquitto.org")
-MQTT_CLIENT = MQTTClient(MQTT_CLIENT_ID, MQTT_SERVER, keepalive=MQTT_KEEPALIVE)
-MQTT_CLIENT.DEBUG = True
 
 MQTT_TOPIC_PREFIX = MQTT_PREFIX
 MQTT_TOPIC_BASE = f"{MQTT_PREFIX}/{CAT_NAME}"
@@ -29,18 +27,6 @@ MQTT_TOPIC_CONNECTED = f"{MQTT_TOPIC_BASE}/connected"
 MQTT_TOPIC_STATUS = f"{MQTT_TOPIC_BASE}/status"
 MQTT_TOPIC_UPTIME = f"{MQTT_TOPIC_BASE}/uptime"
 MQTT_TOPIC_ALLCATS = "winkekatze/allcats"
-
-tim = Timer(-1)
-tim.init(
-    period=MQTT_KEEPALIVE * 500,  # ping twice during KEEPALIVE
-    mode=Timer.PERIODIC,
-    callback=lambda t: send_uptime(),
-)
-
-
-def send_uptime():
-    """Send uptime value."""
-    MQTT_CLIENT.publish(MQTT_TOPIC_UPTIME, str(time()))  # roll over after X
 
 
 def update_config(data):
@@ -55,12 +41,14 @@ def update_config(data):
 
 
 # Received messages from subscriptions will be delivered to this callback
-def message_handler(topic, msg):
+def mqtt_message_handler(topic, msg):
     """MQTT Callback."""
     topic = topic.decode()
     msg = msg.decode()
     print((topic, msg))
-    if topic == MQTT_TOPIC_CONNECTED:  # we successfully subscribed ourselfs
+    if (
+        topic == MQTT_TOPIC_CONNECTED and msg == "1"
+    ):  # we successfully subscribed ourselfs
         EYES.set_color("green")
         wink()
     elif topic == MQTT_TOPIC_ALLCATS or topic.endswith("command"):
@@ -84,22 +72,33 @@ def wink():
     EYES.show("black")
 
 
+def mqtt_connect_handler():
+    """Handle MQTT connect event."""
+    print("on_connect")
+    MQTT_CLIENT.client.subscribe(f"{MQTT_TOPIC_ALLCATS}/#".encode())
+    MQTT_CLIENT.client.subscribe(f"{MQTT_TOPIC_BASE}/#")
+    MQTT_CLIENT.publish(MQTT_TOPIC_CONNECTED, "1", retain=True)
+
+
 def main():
     """Provide main routine."""
     ssid = getattr(CONFIG, "WIFI_SSID", "")
     password = getattr(CONFIG, "WIFI_PASS", "")
-    do_connect(ssid, password)
+    NetworkManager().do_connect(ssid, password, hostname=CAT_NAME)
+
     EYES.show("yellow")
-    MQTT_CLIENT.set_callback(message_handler)
-    MQTT_CLIENT.set_last_will(MQTT_TOPIC_CONNECTED, "0", True)
-    MQTT_CLIENT.connect()
-    MQTT_CLIENT.publish(MQTT_TOPIC_CONNECTED, "1", True)
-    MQTT_CLIENT.subscribe(f"{MQTT_TOPIC_ALLCATS}/#".encode())
-    MQTT_CLIENT.subscribe(f"{MQTT_TOPIC_BASE}/#".encode())
+
+    MQTT_CLIENT.DEBUG = True  # enable debug mode
+    MQTT_CLIENT.on_connect = mqtt_connect_handler
+    MQTT_CLIENT.on_message = mqtt_message_handler
+    MQTT_CLIENT.set_last_will(MQTT_TOPIC_CONNECTED, "0", retain=True)
 
     while True:
-        # Non-blocking wait for message
-        MQTT_CLIENT.wait_msg()
+        if not MQTT_CLIENT.connected:
+            MQTT_CLIENT.connect(
+                client_id=MQTT_CLIENT_ID, server=MQTT_SERVER, keepalive=MQTT_KEEPALIVE
+            )
+        MQTT_CLIENT.wait()
 
 
 if __name__ == "__main__":
@@ -110,4 +109,6 @@ if __name__ == "__main__":
         MQTT_CLIENT.disconnect()
     except (OSError, MQTTException) as err:
         print(f"Resetting: {err}")
+        with open("error.log", mode="a+", encoding="utf-8") as err_log:
+            err_log.write(str(err))
         reset()
