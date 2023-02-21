@@ -4,5 +4,13 @@
     "MQTT_PREFIX": "winkekatze",
     "MQTT_SERVER": "test.mosquitto.org",
     "WIFI_SSID": "<your SSID>",
-    "WIFI_PASS": "<your PASS>"
+    "WIFI_PASS": "<your PASS>",
+    "LED_COUNT": 2,
+    "LED_ORDER": [
+        1,
+        0,
+        2,
+        3
+    ],
+    "LED_PIN": 7
 }

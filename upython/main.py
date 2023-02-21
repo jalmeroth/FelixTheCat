@@ -11,8 +11,11 @@ from mqtt import Wrapper
 from net import NetworkManager
 from servo import Servo
 
-EYES = Eyes()
 CONFIG = Config()
+LED_PIN = getattr(CONFIG, "LED_PIN", "4")
+LED_COUNT = getattr(CONFIG, "LED_COUNT", "2")
+LED_ORDER = getattr(CONFIG, "LED_ORDER", None)  # RGB not GRB
+EYES = Eyes(LED_PIN, LED_COUNT, LED_ORDER)
 MQTT_CLIENT = Wrapper()
 CAT_NAME = getattr(CONFIG, "CAT_NAME", "FelixTheCat")
 MQTT_PREFIX = getattr(CONFIG, "MQTT_PREFIX", "winkekatze")

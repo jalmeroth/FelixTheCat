@@ -2,15 +2,16 @@
 from machine import Pin
 from neopixel import NeoPixel
 
-from const import COLORS, LED_COUNT, LED_PIN, LED_ORDER
+from const import COLORS
 
 
 class Eyes:
     """Represent Eyes."""
 
-    def __init__(self) -> None:
-        self.neo = NeoPixel(Pin(LED_PIN), LED_COUNT)
-        self.neo.ORDER = LED_ORDER
+    def __init__(self, led_pin, led_count, led_order=None) -> None:
+        self.neo = NeoPixel(Pin(led_pin), led_count)
+        if led_order is not None:
+            self.neo.ORDER = tuple(led_order)
         self.show("white")
 
     def set_color(self, color):
