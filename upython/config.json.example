@@ -13,5 +13,6 @@
         3
     ],
     "LED_PIN": 4,
-    "SERVO_PIN": 5
+    "SERVO_PIN": 5,
+    "KIDS_MODE": false
 }

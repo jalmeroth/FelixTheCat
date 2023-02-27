@@ -2,6 +2,7 @@
 import json
 from machine import reset, unique_id
 from ubinascii import hexlify
+from time import sleep
 
 from umqtt.simple import MQTTException
 
@@ -13,6 +14,7 @@ from servo import Servo
 
 CONFIG = Config()
 SERVO_PIN = getattr(CONFIG, "SERVO_PIN", "5")
+KIDS_MODE = getattr(CONFIG, "KIDS_MODE", False)
 LED_PIN = getattr(CONFIG, "LED_PIN", "4")
 LED_COUNT = getattr(CONFIG, "LED_COUNT", "2")
 LED_ORDER = getattr(CONFIG, "LED_ORDER", None)  # RGB not GRB
@@ -54,7 +56,12 @@ def mqtt_message_handler(topic, msg):
         topic == MQTT_TOPIC_CONNECTED and msg == "1"
     ):  # we successfully subscribed ourselfs
         EYES.set_color("green")
-        wink()
+        if not KIDS_MODE:
+            wink()
+        else:
+            EYES.show()
+            sleep(1)
+            EYES.show("black")
     elif topic == MQTT_TOPIC_ALLCATS or topic.endswith("command"):
         wink()
     elif topic.endswith("eye/set"):
