@@ -1,4 +1,4 @@
-"""Provice main routines."""
+"""Provides main routines."""
 import json
 from machine import reset, unique_id
 from ubinascii import hexlify
